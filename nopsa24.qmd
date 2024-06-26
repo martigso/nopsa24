@@ -1,0 +1,287 @@
+---
+title: "Asking with Intent"
+subtitle: "[On the functions of written parliamentary questions]{.midgreen}"
+date: today
+author:
+  - name: Solveig Bjørkholt
+    affiliation: University of Oslo
+  - name: Martin Søyland
+    affiliation: University of Oslo
+format: 
+  revealjs:
+    transition: zoom
+    transition-speed: slow
+    incremental: true
+    theme: [serif, pres.scss]
+    logo: "uio.png"
+bibliography: "../refs.bib"
+biblio-style: "../apsr.bst"
+self-contained: true
+engine: knitr
+editor_options: 
+  chunk_output_type: console
+---
+
+# Backdrop {.smaller}
+
+
+[**The Drama is in the Ink**]{.hugetext .purple}</br>[*Conflict in Written Parliamentary Questions*]{.bigtext}
+
+> [O]pposition MPs ask more positive questions than MPs from governing parties. However, when including the topical content of questions, the effect is consistently reduced. We argue these findings point to the existence of a participation threshold for governing parties.
+>
+> [Bjørkholt and Søyland (forthcoming`r emo::ji("tm")`, LSQ)]{.mediumtext}
+
+
+---
+
+</br></br></br>
+
+[Recurring problem:]{.hugetext}</br>[*Why do MPs ask these questions in the first place?*]{.midgreen}
+
+. . .
+
+- Two questions
+    1. Which functions of WPQs are more used?
+    2. Do MPs from the opposition use WPQs differently from government party MPs?
+
+
+
+# WPQs in Stortinget
+
+- [Short questions]{.darkred}
+    - Optional justification (1 A4)
+    - Each MP quota: 2 per week
+    - Presidency can dismiss questions
+- [Minister]{.blue} should answer within 6 days:
+    - An actual answer
+    - Justification for not answering
+    - Message that the WPQ will not be answered
+
+
+# Theory
+
+## Functions of WPQs {.smaller auto-animate=true}
+
+:::{tab}
+
++----------------------------------+-------------------------------------------+-------------------------+
+| **\ **                           | **Type**                                  | **Label**               |
++==================================+===========================================+=========================+
+| [**Oversight**]{.darkcyan}       | _Reactive_ [@Ogul1990]                    | Accountability          |
++----------------------------------+-------------------------------------------+-------------------------+
+|                                  | _Active_ [@Ogul1990]                      | Information gathering   |
++----------------------------------+-------------------------------------------+-------------------------+
+
+:::
+
+## Functions of WPQs {.smaller auto-animate=true}
+
+:::{tab}
+
++----------------------------------+-------------------------------------------+-------------------------+
+| **\ **                           | **Type**                                  | **Label**               |
++==================================+===========================================+=========================+
+| [**Oversight**]{.darkcyan}       | _Reactive_ [@Ogul1990]                    | Accountability          |
++----------------------------------+-------------------------------------------+-------------------------+
+|                                  | _Active_ [@Ogul1990]                      | Information gathering   |
++----------------------------------+-------------------------------------------+-------------------------+
+| [**Issue competition**]{.orange} | _Self-promotion_ [@Rasch2011]             | Personal representation |
++----------------------------------+-------------------------------------------+-------------------------+
+|                                  | _Party-promotion_ [@GP2010]               | Partisan campaigning    |
++----------------------------------+-------------------------------------------+-------------------------+
+
+:::
+
+## Functions of WPQs {.smaller auto-animate=true}
+
+:::{tab}
+
++----------------------------------+-------------------------------------------+-------------------------+
+| **\ **                           | **Type**                                  | **Label**               |
++==================================+===========================================+=========================+
+| [**Oversight**]{.darkcyan}       | _Reactive_ [@Ogul1990]                    | Accountability          |
++----------------------------------+-------------------------------------------+-------------------------+
+|                                  | _Active_ [@Ogul1990]                      | Information gathering   |
++----------------------------------+-------------------------------------------+-------------------------+
+| [**Issue competition**]{.orange} | _Self-promotion_ [@Rasch2011]             | Personal representation |
++----------------------------------+-------------------------------------------+-------------------------+
+|                                  | _Party-promotion_ [@GP2010]               | Partisan campaigning    |
++----------------------------------+-------------------------------------------+-------------------------+
+| [**Obstructionsim**]{.darkred}   | _Legislative obstructionism_ [@Wawro2010] | Obstruction of time     |
++----------------------------------+-------------------------------------------+-------------------------+
+
+:::
+
+# Methods
+
+## Data {.smaller}
+
+```{r}
+#| label: data
+#| echo: false
+library(dplyr)
+
+wq_base <- read.csv("../../question_sentiment/data/written_analysis.csv")
+
+
+wq_base |>
+  tibble() |> 
+  select(id, mp_id, q_from_party, q_to_party, text) |> 
+  slice_sample(n = 5) |>
+  rowwise() |> 
+  mutate(text = paste(unlist(tokenizers::tokenize_words(text))[1:20], collapse = " ")) |> 
+  kableExtra::kable() |> 
+  kableExtra::kable_styling(font_size = 24)
+
+```
+
+## Data {.smaller}
+
+:::: {.columns}
+
+::: {.column width=30%}
+
+- $36,532$ WPQs
+- $6$ Parliamentary periods
+- $14$ Parties
+- $6,845,888$ Tokens
+- $736$ MPs
+
+:::
+
+::: {.column width=70%}
+
+
+![](ntokens_dens.png)
+
+:::
+
+::::
+
+
+
+
+## Manual coding and classification {.scrollable .smaller}
+
+:::: {.columns}
+
+::: {.column}
+
+![](mc_t.png)
+
+:::
+
+::: {.column .fragment}
+
+Bad classification scheme or hard task?
+
+![](roc_acc.png)
+
+:::
+
+::::
+
+## NorBERT 3 {.smaller data-background="norbert.png" data-background-size=10% data-background-position="0,0"}
+
+:::: {.columns}
+
+::: {.column}
+
+- @Samuel2023
+- Subset only WPQs coders agree on
+- Fine-tune NORBERT 3 base on our 5 categories
+- Classify remaining WPQs:
+    - 5 proportions per question, sums to 1
+- Assumptions
+    1. WPQs can serve multiple functions at once (MMM)
+    1. ... but to different degrees
+    2. WPQS do not serve other functions than the 5 categories
+    3. The language of WPQs contain this information
+
+:::
+
+::: {.column}
+
+![](traindata_freq.png)
+
+:::
+
+::::
+
+## Design {.smaller}
+
+
+:::: {.columns}
+
+::: {.column .fragment}
+
+- Dependent variable(s)
+    - WPQ class proportion(s)
+
+:::
+
+::: {.column}
+
+- Independent variable
+    - MP to minister relation
+        1. Opposition
+        2. Coalition partner
+        3. Same party
+- Fixed effects
+    - Parliamentary period (clustered)
+    - Party (clustered)
+    - MP
+
+:::
+
+::::
+
+# Results
+
+## What function is used more?
+
+![](class_dist.png)
+
+## Who uses which functions? {.smaller auto-animate=true}
+
+:::{pic}
+![](reg_1.png){width=40%}
+:::
+
+## Who uses which functions? {.smaller auto-animate=true}
+
+:::{pic}
+![](reg_2.png){width=57.5%}
+:::
+
+## Who uses which functions? {.smaller auto-animate=true}
+
+:::{pic}
+![](reg_3.png){width=75%}
+:::
+
+## Who uses which functions? {.smaller auto-animate=true}
+
+:::{pic}
+![](reg_4.png){width=92.5%}
+:::
+
+
+# To-do {.smaller}
+
+
+1. Consolidate the theoretical framework
+2. Fine-tune the fine-tuned model
+3. Use NorBERT 3 large on cluster
+4. Train 1 model per class (utilize sub-categories)
+5. Include election margin in regression (maybe)
+
+
+
+
+# References
+
+::: {#refs}
+:::
+
+
