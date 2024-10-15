@@ -1,0 +1,559 @@
+---
+title: "Asking with Intent"
+subtitle: "[On the functions of written parliamentary questions]{.midgreen}"
+date: today
+author:
+  - name: Solveig Bjørkholt
+    affiliation: University of Oslo
+  - name: Martin Søyland
+    affiliation: University of Oslo
+format: 
+  revealjs:
+    transition: zoom
+    transition-speed: slow
+    incremental: true
+    theme: [serif, pres.scss]
+    logo: "uio.png"
+bibliography: "../refs.bib"
+biblio-style: "../apsr.bst"
+self-contained: true
+engine: knitr
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: setup
+#| eval: true
+#| echo: false
+
+library(dplyr)
+library(stringr)
+
+wq_base <- read.csv("~/Dropbox/postdoc/storting/papers/question_sentiment/data/written_analysis.csv")
+prop <- read.csv("../data/binary/binarypreds.csv")
+
+
+prop_clean <- prop |> 
+  select(file_name,
+         persrep = personligrep_pred,
+         account = ansvarlig_pred,
+         informa = informasjon_pred,
+         partrep = partipol_pred) |> 
+  mutate(across(persrep:partrep, as.numeric),
+         wq_id = str_extract(file_name, "[0-9]+"),
+         mp_id = str_extract(file_name, "[A-ZÆØÅ]+")) |> 
+  select(wq_id, mp_id, persrep:partrep)
+
+
+
+library(tidyverse)
+
+
+coder1 <- read_csv("../data/manual_coding/train_data_coder1.csv", show_col_types = FALSE)
+coder2 <- read_csv("../data/manual_coding/train_data_coder2.csv", show_col_types = FALSE)
+coder3 <- read_csv("../data/manual_coding/train_data_coder3.csv", show_col_types = FALSE)
+
+
+
+coder1 <- coder1 |> 
+  pull(main) |> 
+  str_split("//") |> 
+  unlist() |> 
+  table()
+
+coder2 <- coder2 |> 
+  pull(main) |> 
+  str_split("//") |> 
+  unlist() |> 
+  table()
+
+coder3 <- coder3 |> 
+  pull(main) |> 
+  str_split("//") |> 
+  unlist() |> 
+  table()
+
+
+
+
+```
+
+
+# Backdrop {.smaller}
+
+
+[**The Drama is in the Ink**]{.hugetext .purple}</br>[*Conflict in Written Parliamentary Questions*]{.bigtext}
+
+> [O]pposition MPs ask more positive questions than MPs from governing parties. However, when including the topical content of questions, the effect is consistently reduced. We argue these findings point to the existence of a participation threshold for governing parties.
+>
+> [@Bjoerkholt2024]{.mediumtext}
+
+
+---
+
+</br></br></br>
+
+[Recurring (reviewer) problem:]{.hugetext}</br>[**Why do MPs ask these questions in the first place?**]{.midgreen}
+
+`_______________________________`
+
+. . .
+
+</br>
+<u>Two questions</u>
+
+1. What are the potential motivations/functions?
+2. Can we measure it?
+
+# WPQs in Stortinget
+
+- [Short questions]{.darkred}
+    - Optional justification (1 A4)
+    - Each MP quota: 2 per week
+    - Presidency can dismiss questions
+- [Minister]{.blue} should answer within 6 days:
+    - An actual answer
+    - Justification for not answering
+    - Message that the WPQ will not be answered
+
+
+
+# Nonlegislative activities {.center}
+
+<!-- We tend to throw all types of activities into the same pot -->
+
+:::: {.columns}
+
+::: {.column}
+
+</br>
+
+```{mermaid}
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+        'primaryColor': 'white',
+        'primaryBorderColor': 'black',
+        'secondaryColor': 'white'
+    }
+  }
+}%%
+
+flowchart TD
+   PD["Used by procedural<br>necessity in legislation"]
+   UT2["Used in the<br>legislative process?"]
+   
+   LA["`**Legislative activity**`"]
+   NL["`**Nonlegislative activity**`"]
+
+   PD -- Yes --> LA
+   PD -- No --> UT2 -. When yes .-> LA
+   UT2 -. When no .-> NL
+   UT2 -- Never --> NL
+```
+
+:::
+
+::: {.column}
+
+![](thepot.png)
+
+:::
+
+::::
+
+# Intent for nonlegislative participation
+
+## Functions of WPQs {.smaller auto-animate=true transition="none"}
+
+. . .
+
+:::{tab}
+
++----------------------------------+-------------------------------------------+-------------------------+
+| **\ **                           | **Type**                                  | **Label**               |
++==================================+===========================================+=========================+
+| [**Oversight**]{.darkcyan}       | _Reactive_ [@Ogul1990]                    | Accountability          |
++----------------------------------+-------------------------------------------+-------------------------+
+|                                  | _Active_ [@Ogul1990]                      | Information gathering   |
++----------------------------------+-------------------------------------------+-------------------------+
+
+:::
+
+## Functions of WPQs {.smaller auto-animate=true transition="none"}
+
+:::{tab}
+
++----------------------------------+-------------------------------------------+-------------------------+
+| **\ **                           | **Type**                                  | **Label**               |
++==================================+===========================================+=========================+
+| [**Oversight**]{.darkcyan}       | _Reactive_ [@Ogul1990]                    | Accountability          |
++----------------------------------+-------------------------------------------+-------------------------+
+|                                  | _Active_ [@Ogul1990]                      | Information gathering   |
++----------------------------------+-------------------------------------------+-------------------------+
+| [**Issue competition**]{.orange} | _Self-promotion_ [@Rasch2011]             | Personal representation |
++----------------------------------+-------------------------------------------+-------------------------+
+|                                  | _Party-promotion_ [@GP2010]               | Partisan campaigning    |
++----------------------------------+-------------------------------------------+-------------------------+
+
+:::
+
+## Functions of WPQs {.smaller auto-animate=true transition="none"}
+
+:::{tab}
+
++----------------------------------+-------------------------------------------+-------------------------+
+| **\ **                           | **Type**                                  | **Label**               |
++==================================+===========================================+=========================+
+| [**Oversight**]{.darkcyan}       | _Reactive_ [@Ogul1990]                    | Accountability          |
++----------------------------------+-------------------------------------------+-------------------------+
+|                                  | _Active_ [@Ogul1990]                      | Information gathering   |
++----------------------------------+-------------------------------------------+-------------------------+
+| [**Issue competition**]{.orange} | _Self-promotion_ [@Rasch2011]             | Personal representation |
++----------------------------------+-------------------------------------------+-------------------------+
+|                                  | _Party-promotion_ [@GP2010]               | Partisan campaigning    |
++----------------------------------+-------------------------------------------+-------------------------+
+| [**Obstructionsim**]{.darkred}   | _Legislative obstructionism_ [@Wawro2010] | Obstruction             |
++----------------------------------+-------------------------------------------+-------------------------+
+
+:::
+
+# Examples
+
+## Accountability
+
+:::: {.columns}
+
+::: {.column width=25%}
+
+![Margret Hagerup<br>Conservatives<br>20.04.2023](mahag.png)
+
+:::
+
+::: {.column width=75%}
+
+> Why has [the government not followed up]{.red} on the consultation input from LO and NHO [...] where they request that training offices must still be allowed to be parties to training contracts and that businesses should still be able to organize in such a way that the financing goes through the training offices?
+
+:::
+
+::::
+
+## Information gathering
+
+:::: {.columns}
+
+::: {.column width=25%}
+
+![Grete Wold<br>Socialist Left Party<br>23.05.2023](grewol.png)
+
+:::
+
+::: {.column width=75%}
+> Can the minister [provide an update]{.purple} on the follow-up and status of the decision to test alternatives to the current examination system, and have any municipalities received approval for their applications? 
+:::
+
+::::
+
+
+## Personal representation
+
+:::: {.columns}
+
+::: {.column width=25%}
+
+![Geir Pollestad<br>Center Party<br>30.10.2020](gp.png)
+
+:::
+
+::: {.column width=75%}
+
+> [The [municipality of Time]{.midgreen} has organized its cinema operations as part of the municipal enterprise. This means they cannot participate in the compensation scheme. If the municipality had organized the cinema operations as a limited company (AS) or with its own organization number, a significant portion of the COVID-19 losses would have been covered. Does the minister believe it is right for the municipality to incur a loss due to its organizational structure, or will the minister take steps to address this issue?]{.bigtext}
+
+:::
+
+::::
+
+
+## Partisan campaigning
+
+:::: {.columns}
+
+::: {.column width=25%}
+
+![André N. Skjelstad<br>Liberal Party<br>31.01.2017](anns.png)
+
+:::
+
+::: {.column width=75%}
+
+> What is the situation regarding access to literature and translations into South Sami? [...] [The Liberal Party believes]{.orange} it is important to invest in translators and the development of literature and therefore wants more information about the situation of the South Sami language in 2017.
+
+:::
+
+::::
+
+
+
+## Obstruction
+
+:::: {.columns}
+
+::: {.column width=25%}
+
+![Gjermund Hagesæter<br>Progress Party<br>22.03.2012](gjh.png)
+
+:::
+
+::: {.column width=75%}
+
+> Can casting gand [spells], or "ganding" [spellcrafting] be punishable under Norwegian law?
+
+:::
+
+::::
+
+
+```{r}
+#| eval: false
+stortingscrape::get_mp_pic("GJH", destfile = "gjh.png", size = "stort")
+```
+
+# Methods
+
+## Data {.smaller}
+
+</br> 
+
+```{r}
+#| label: data
+#| echo: false
+
+wq_base |>
+  tibble() |>
+  select(id, mp_id, q_from_party, q_to_party, ministry = answ_by_minister_id, text) |>
+  slice_sample(n = 5) |>
+  rowwise() |>
+  mutate(text = paste(unlist(tokenizers::tokenize_words(text))[1:20], collapse = " ")) |>
+  kableExtra::kable() |>
+  kableExtra::kable_styling(font_size = 22)
+
+```
+
+## Data {.smaller}
+
+:::: {.columns}
+
+::: {.column width=30%}
+
+- $36,532$ WPQs
+- $6$ Parliamentary periods
+- $14$ Parties
+- $6,845,888$ Tokens
+- $736$ MPs
+
+:::
+
+::: {.column width=70%}
+
+
+![](ntokens_dens.png)
+
+:::
+
+::::
+
+
+
+
+## Manual coding {.smaller}
+
+:::: {.columns}
+
+
+::: {.column .fragment width="45%"}
+
+- [Coding scheme]{.darkred} (see paper) mostly based on @Wiberg1994
+- Meeting with RAs discussing
+    - [theoretical backdrop]{.orange}
+    - [coding scheme]{.yellow}
+    - [examples]{.midgreen}
+    - [multi-membership]{.blue}
+- Code only one main category
+    - ... and sub-categories separate
+
+
+:::
+
+:::{.column width="4%"}
+
+:::
+
+::: {.column width="51%"}
+
+```{r}
+#| label: coder_counts
+#| echo: false
+#| eval: true
+
+
+tibble(cat = names(coder1),
+       coder1 = as.numeric(coder1),
+       coder2 = c(as.numeric(coder2[1]), 0, as.numeric(coder2[2:4])),
+       coder3 = as.numeric(coder3)) |> 
+  mutate(Function = case_match(cat,
+                          "Ansvarliggjøring"              ~ "Accountability",
+                          "Apolitisk strategi"            ~ "Obstruction",
+                          "Informasjonsinnhenting"        ~ "Information gathering",
+                          "Partipolitisk representasjon"  ~ "Partisan campaigning",
+                          "Personlig representasjon"      ~ "Personal representation"),
+         sum = coder1 + coder2 + coder3) |> 
+  select(Function, coder1:coder3, Sum = sum) |> 
+  bind_rows(tibble(Function = "Sum", coder1 = sum(coder1), coder2 = sum(coder2), coder3 = sum(coder3), 
+            Sum = sum(sum(coder1) + sum(coder2) + sum(coder3)))) |> 
+  kableExtra::kable(linesep = "",
+                    #caption = "Individual coder counts for main WPQ functions.", 
+                    label = "tbl-codercounts") |> 
+  kableExtra::row_spec(0, bold = TRUE) |> 
+  kableExtra::row_spec(5, hline_after = TRUE, ) |> 
+  kableExtra::column_spec(4, border_right = TRUE) |> 
+  kableExtra::kable_styling(font_size = 22) 
+
+```
+
+
+:::
+
+::::
+
+## Inter-coder reliability
+
+</br>
+
+`r emo::ji("chart_with_downwards_trend")`
+
+## NorBERT 3 {.smaller}
+
+:::: {.columns}
+
+::: {.column width=60%}
+
+![Training data](traindata_freq.png)
+
+:::
+
+::: {.column width=40%}
+
+- Part of @Samuel2023 NorBench
+- Subset of WPQs at least 2 coders agree on
+- Build fine-tuned NorBert3-base models
+    - One for each category (excluding obstruction)
+    - Only using WPQs at least two coders agreen on (main/sub)
+- Classify remaining WPQs
+
+:::
+
+::::
+
+## Testing the classifications {.smaller}
+
+:::: {.columns}
+
+::: {.column .fragment}
+
+- WPQ class proportion(s) as DV
+    - [*H1*]{.darkred}: MPs use the accountability function in WPQs more often on issues where coalition partners diverge [@Whitaker2022]
+    - [*H2*]{.blue}: MPs use the information gathering function in WPQs more often on issues where they are **not experts** [@Bendor1987]
+    - [*H3*]{.midgreen}: MPs use the partisan campaigning function in WPQs more often when asking a question to their own party
+    - [*H4*]{.darkcyan}: MPs use the personal representation function in WPQs more often when an election is close
+
+:::
+
+::: {.column}
+
+```{r}
+#| label: sumstats
+#| eval: true
+#| echo: false
+#| results: asis
+
+wq_base |>
+  mutate(id = as.character(id)) |>
+  left_join(prop_clean, by = c("id" = "wq_id",
+                               "mp_id" = "mp_id")) |>
+  mutate(opposition = ifelse(mp_minister_relation == "opposition", 1, 0),
+         same_party = ifelse(mp_minister_relation == "same party", 1, 0),
+         coal_partn = ifelse(mp_minister_relation == "coalition partner", 1, 0),
+         q_gender = ifelse(q_gender == "kvinne", 0, 1),
+         a_gender = ifelse(a_gender == "kvinne", 0, 1)) |>
+  select(c("account", "informa", "partrep", "persrep",
+           "opposition", "same_party", "coal_partn",
+           "q_gender", "a_gender", "age")) |>
+  data.frame() |>
+  vtable::sumtable(out = "kable",
+                   anchor = "tbl-descstats",
+                   title = "",
+                   labels = c("Accountability", "Information gathering",
+                              "Party representation", "Personal representation",
+                              "Opposition", "Same party", "Coalition partner",
+                              "Questioner gender (male)", "Minister gender (male)",
+                              "Age"),
+                   digits = 2) |>
+  kableExtra::kable_styling(font_size = 20)
+
+```
+
+:::
+
+::::
+
+# Temporary results
+
+## What functions are used more?
+
+![](norbert.png)
+
+## What drives intent? {.smaller auto-animate=true}
+
+:::{pic}
+![](reg_gu_1.png){width=35%}
+:::
+
+## What drives intent? {.smaller auto-animate=true}
+
+:::{pic}
+![](reg_gu_2.png){width=48.4%}
+:::
+
+## What drives intent? {.smaller auto-animate=true}
+
+:::{pic}
+![](reg_gu_3.png){width=58.35%}
+:::
+
+## What drives intent? {.smaller auto-animate=true}
+
+:::{pic}
+![](reg_gu_4.png){width=70.25%}
+:::
+
+
+# To-do {.smaller}
+
+1. Consider coding more questions
+    - target the partisan and obstruction categories through search?
+1. Gather data for testing [*H1*]{.midgreen}, [*H2*]{.darkcyan}, and [*H3*]{.blue}
+1. Consolidate the theoretical framework
+2. Fine-tune the fine-tuned model
+3. Use NorBERT3-large on cluster
+
+
+
+
+# References
+
+::: {#refs}
+:::
+
+
