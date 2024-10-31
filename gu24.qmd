@@ -320,6 +320,12 @@ flowchart TD
 stortingscrape::get_mp_pic("GJH", destfile = "gjh.png", size = "stort")
 ```
 
+---
+
+
+![](obstr_transp.png)
+
+
 # Methods
 
 ## Data {.smaller}
